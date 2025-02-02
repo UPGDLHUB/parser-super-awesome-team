@@ -2,6 +2,7 @@ import java.io.*;
 import java.util.Map;
 import java.util.Vector;
 
+
 /**
  * Lexer class to analyze the input file
  * This one is an initial version that uses a DFA to recognize binary numbers
