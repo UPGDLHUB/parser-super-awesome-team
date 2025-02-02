@@ -35,4 +35,4 @@ jobs:
     - name: Submit Grade
       uses: education/autograding-grader@v1
       with:
-      tests: '[{"name": "JUnit Tests", "points": 10, "output": "${{ steps.parse_results.outputs.score }}" }]'
+        tests: '[{"name": "JUnit Tests", "points": 10, "output": "${{ steps.parse_results.outputs.score }}" }]'
