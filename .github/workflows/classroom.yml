@@ -25,12 +25,13 @@ jobs:
     - name: Build with Maven
       run: mvn clean install
     - name: Run Maven Tests
-      run: mvn test -Dtest=* | tee test-results.log
-    - name: Parse Test Results
-      id: parse_results
       run: |
+        mvn test -Dtest=* | tee test-results.log
         PASSED=$(grep -oP 'Tests run: \d+, Failures: 0, Errors: 0' test-results.log | wc -l)
         SCORE=$((PASSED * 10))
-        echo "Tests Passed: $PASSED"
         echo "GRADE: $SCORE"
         echo "GRADE=$SCORE" >> $GITHUB_ENV
+    - name: Feedback
+      run: |
+        echo "Autograding complete. Grade: $GRADE"
+        shell: bash
