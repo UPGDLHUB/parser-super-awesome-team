@@ -5,6 +5,9 @@ import java.io.IOException;
  * Main class to run the lexer
  *
  * @author javiergs
+ * @author eduardomv
+ * @author santiarr
+ * @author yawham
  * @version 1.0
  */
 public class Main {

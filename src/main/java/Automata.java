@@ -5,6 +5,9 @@ import java.util.*;
  * This version is implemented with a HashMap to store the transition table.
  *
  * @author javiergs
+ * @author eduardomv
+ * @author santiarr
+ * @author yawham
  * @version 1.0
  */
 public class Automata {
