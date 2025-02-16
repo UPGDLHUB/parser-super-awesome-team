@@ -58,7 +58,8 @@ public class Lexer {
 		dfa.addTransition("s4", "8", "s4");
 		dfa.addTransition("s4", "9", "s4");
 
-		dfa.addAcceptState("s4", "NUMBER");
+		dfa.addAcceptState("s1", "INTEGER");
+		dfa.addAcceptState("s4", "INTEGER");
 
 		// Identifier transitions (start with letter, can contain letters, numbers, underscore)
 		for (char c = 'a'; c <= 'z'; c++) {
@@ -74,9 +75,76 @@ public class Lexer {
 		for (char c = '0'; c <= '9'; c++) {
 			dfa.addTransition("s5", String.valueOf(c), "s5");
 		}
-
+		dfa.addTransition("s0", "_", "s5");
+		dfa.addTransition("s0", "$", "s5");
 		dfa.addTransition("s5", "_", "s5");
+		dfa.addTransition("s5", "$", "s5");
 		dfa.addAcceptState("s5", "IDENTIFIER");
+
+
+		//String transitions (start with ", can contain letters, numbers, underscore and symbols)
+		dfa.addTransition("s0", "\"", "s6");
+		for (char c = 32; c <= 126; c++) {
+			if (c != '"') {
+				dfa.addTransition("s6", String.valueOf(c), "s6");
+			}
+		}
+		dfa.addTransition("s6", "\"", "s7");
+		dfa.addAcceptState("s7", "STRING");
+
+
+		//Hexadecimal transitions
+		dfa.addTransition("s1", "x", "s8");
+		dfa.addTransition("s1", "X", "s8");
+		for (char c = 'a'; c <= 'f'; c++) {
+			dfa.addTransition("s8", String.valueOf(c), "s9");
+			dfa.addTransition("s9", String.valueOf(c), "s9");
+		}
+		for (char c = 'A'; c <= 'F'; c++) {
+			dfa.addTransition("s8", String.valueOf(c), "s9");
+			dfa.addTransition("s9", String.valueOf(c), "s9");
+		}
+
+		for (char c = '0'; c <= '9'; c++) {
+			dfa.addTransition("s8", String.valueOf(c), "s9");
+			dfa.addTransition("s9", String.valueOf(c), "s9");
+		}
+		dfa.addAcceptState("s9", "HEXADECIMAL");
+
+
+		//Octal transition
+		dfa.addTransition("s1", "0", "s10");
+		dfa.addTransition("s1", "1", "s10");
+		dfa.addTransition("s1", "2", "s10");
+		dfa.addTransition("s1", "3", "s10");
+		dfa.addTransition("s1", "4", "s10");
+		dfa.addTransition("s1", "5", "s10");
+		dfa.addTransition("s1", "6", "s10");
+		dfa.addTransition("s1", "7", "s10");
+		dfa.addTransition("s1", "8", "s4");
+		dfa.addTransition("s1", "9", "s4");
+		dfa.addTransition("s10", "0", "s10");
+		dfa.addTransition("s10", "1", "s10");
+		dfa.addTransition("s10", "2", "s10");
+		dfa.addTransition("s10", "3", "s10");
+		dfa.addTransition("s10", "4", "s10");
+		dfa.addTransition("s10", "5", "s10");
+		dfa.addTransition("s10", "6", "s10");
+		dfa.addTransition("s10", "7", "s10");
+		dfa.addTransition("s10", "8", "s4");
+		dfa.addTransition("s10", "9", "s4");
+
+		dfa.addAcceptState("s10", "OCTAL");
+
+//		Float transitions
+		dfa.addTransition("s1", ".", "s11");
+		dfa.addTransition("s4", ".", "s11");
+		dfa.addTransition("s10", ".", "s11");
+		for (char c = '0'; c <= '9'; c++) {
+			dfa.addTransition("s11", String.valueOf(c), "s12");
+			dfa.addTransition("s12", String.valueOf(c), "s12");
+		}
+		dfa.addAcceptState("s12", "FLOAT");
 
 	}
 
@@ -98,19 +166,21 @@ public class Lexer {
 
 		while (index < line.length()) {
 			char currentChar = line.charAt(index);
-			if (!(isOperator(currentChar) || isDelimiter(currentChar) || isSpace(currentChar))) {
+			if (Objects.equals(currentState, "s6") || ((Objects.equals(currentState, "s4") || Objects.equals(currentState, "s1")|| Objects.equals(currentState, "s10")) && currentChar == '.')){
+				//Ignores specific operators and delimiters for certain states
 				nextState = dfa.getNextState(currentState, currentChar);
-				if (nextState != null) {
-					string = string + currentChar;
-					currentState = nextState;
-				} else {
-					if (!string.isEmpty()) {
-						processString(currentState, string, lineNumber);
-						string = "";
-					}
-					tokens.add(new Token(String.valueOf(currentChar), "ERROR", lineNumber));
-					currentState = "s0";
-				}
+				string = string + currentChar;
+				currentState = nextState;
+			} else if (Objects.equals(currentState, "s7") ) {
+				//Accepts a complete string
+				String tokenType = dfa.getAcceptStateName(currentState);
+				tokens.add(new Token(string + currentChar, tokenType, lineNumber));
+				currentState = "s0";
+				string = "";
+			} else if (!(isOperator(currentChar) || isDelimiter(currentChar) || isSpace(currentChar))) {
+				nextState = dfa.getNextState(currentState, currentChar);
+				string = string + currentChar;
+				currentState = nextState;
 			} else {
 				if (!string.isEmpty()) {
 					processString(currentState, string, lineNumber);
