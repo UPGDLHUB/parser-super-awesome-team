@@ -190,6 +190,16 @@ public class Lexer {
 
 		dfa.addAcceptState("s19", "FLOAT");
 
+		//Char transitions (start with ', can contain just letters, numbers, underscore or symbols)
+		dfa.addTransition("s0", "'", "s20");
+		for (char c = 32; c <= 126; c++) {
+			if (c != '\'') {
+				dfa.addTransition("s20", String.valueOf(c), "s21");
+			}
+		}
+		dfa.addTransition("s21", "'", "s22");
+		dfa.addAcceptState("s22", "CHAR");
+
 	}
 
 	public void run() throws IOException {
@@ -212,8 +222,8 @@ public class Lexer {
 
 			char currentChar = line.charAt(index);
 			if (
-					//Pass if String
-					Objects.equals(currentState, "s6") ||
+					//Pass if String or Char
+					(Objects.equals(currentState, "s6") || Objects.equals(currentState, "s20")|| Objects.equals(currentState, "s21")) ||
 					//Pass if Integer and Octal To Float
 					((Objects.equals(currentState, "s4") || Objects.equals(currentState, "s1")|| Objects.equals(currentState, "s10")) && currentChar == '.') ||
 					// Pass if Integer of Float with negative Exp
@@ -224,7 +234,8 @@ public class Lexer {
 				nextState = dfa.getNextState(currentState, currentChar);
 				string = string + currentChar;
 				currentState = nextState;
-				if (Objects.equals(currentState, "s7") ) {
+
+				if (Objects.equals(currentState, "s7")|| Objects.equals(currentState, "s22")) {
 					//Accepts a complete string
 					String tokenType = dfa.getAcceptStateName(currentState);
 					tokens.add(new Token(string, tokenType, lineNumber));
@@ -232,7 +243,7 @@ public class Lexer {
 					string = "";
 				}
 			} else if (!(isOperator(currentChar) || isDelimiter(currentChar) || isSpace(currentChar))) {
-				if (currentChar == '"' && !string.isEmpty()) {
+				if ((currentChar == '"'|| currentChar == '\'') && !string.isEmpty()) {
 					processString(currentState, string, lineNumber);
 					currentState = "s0";
 					string = "";
@@ -245,7 +256,18 @@ public class Lexer {
 					processString(currentState, string, lineNumber);
 				}
 				if (isOperator(currentChar)) {
-					tokens.add(new Token(String.valueOf(currentChar), "OPERATOR", lineNumber));
+					if (index + 1 < line.length()) {
+						char nextChar = line.charAt(index + 1);
+						String s =  "" + currentChar + nextChar;
+						if (isDoubleOperator(s)) {
+							tokens.add(new Token(s, "OPERATOR", lineNumber));
+							index++;
+						}else{
+							tokens.add(new Token(String.valueOf(currentChar), "OPERATOR", lineNumber));
+						}
+					}else{
+						tokens.add(new Token(String.valueOf(currentChar), "OPERATOR", lineNumber));
+					}
 				} else if (isDelimiter(currentChar)) {
 					tokens.add(new Token(String.valueOf(currentChar), "DELIMITER", lineNumber));
 				}
@@ -283,7 +305,22 @@ public class Lexer {
 
 	private boolean isOperator(char c) {
 		return c == '=' || c == '+' || c == '-' || c == '*' || c == '/' ||
-				c == '<' || c == '>' || c == '!' || c == '&' || c == '|';
+				c == '<' || c == '>' || c == '!' || c == '&' || c == '|' || c=='%';
+	}
+	private boolean isDoubleOperator(String c) {
+		return Objects.equals(c, "==") ||
+				Objects.equals(c, "!=")||
+				Objects.equals(c, ">=")||
+				Objects.equals(c, "<=")||
+				Objects.equals(c, "+=")||
+				Objects.equals(c, "-=")||
+				Objects.equals(c, "*=")||
+				Objects.equals(c, "/=")||
+				Objects.equals(c, "%=")||
+				Objects.equals(c, "++")||
+				Objects.equals(c, "--")||
+				Objects.equals(c, "||")||
+				Objects.equals(c, "&&");
 	}
 
 	public void printTokens() {
