@@ -144,7 +144,51 @@ public class Lexer {
 			dfa.addTransition("s11", String.valueOf(c), "s12");
 			dfa.addTransition("s12", String.valueOf(c), "s12");
 		}
+		dfa.addAcceptState("s11", "FLOAT");
 		dfa.addAcceptState("s12", "FLOAT");
+
+
+
+		// Exponent transition from integer
+		dfa.addTransition("s4", "e", "s13");
+		dfa.addTransition("s4", "E", "s13");
+		dfa.addTransition("s13", "-", "s14");
+
+		for (char c = '1'; c <= '9'; c++) {
+			dfa.addTransition("s13", String.valueOf(c), "s15");
+			dfa.addTransition("s14", String.valueOf(c), "s15");
+			dfa.addTransition("s15", String.valueOf(c), "s15");
+		}
+		dfa.addTransition("s15", String.valueOf('0'), "s15");
+		dfa.addAcceptState("s15", "INTEGER");
+
+		// Exponent transition from float
+		dfa.addTransition("s12", "e", "s16");
+		dfa.addTransition("s12", "E", "s16");
+		dfa.addTransition("s16", "-", "s17");
+
+		for (char c = '1'; c <= '9'; c++) {
+			dfa.addTransition("s16", String.valueOf(c), "s18");
+			dfa.addTransition("s17", String.valueOf(c), "s18");
+			dfa.addTransition("s18", String.valueOf(c), "s18");
+		}
+		dfa.addTransition("s18", String.valueOf('0'), "s18");
+		dfa.addAcceptState("s18", "FLOAT");
+
+
+		//Add F to be float
+		dfa.addTransition("s1", String.valueOf('f'), "s19");
+		dfa.addTransition("s1", String.valueOf('F'), "s19");
+		dfa.addTransition("s4", String.valueOf('f'), "s19");
+		dfa.addTransition("s4", String.valueOf('F'), "s19");
+		dfa.addTransition("s11", String.valueOf('f'), "s19");
+		dfa.addTransition("s11", String.valueOf('F'), "s19");
+		dfa.addTransition("s12", String.valueOf('f'), "s19");
+		dfa.addTransition("s12", String.valueOf('F'), "s19");
+		dfa.addTransition("s18", String.valueOf('f'), "s19");
+		dfa.addTransition("s18", String.valueOf('F'), "s19");
+
+		dfa.addAcceptState("s19", "FLOAT");
 
 	}
 
@@ -165,19 +209,34 @@ public class Lexer {
 		int index = 0;
 
 		while (index < line.length()) {
+
 			char currentChar = line.charAt(index);
-			if (Objects.equals(currentState, "s6") || ((Objects.equals(currentState, "s4") || Objects.equals(currentState, "s1")|| Objects.equals(currentState, "s10")) && currentChar == '.')){
+			if (
+					//Pass if String
+					Objects.equals(currentState, "s6") ||
+					//Pass if Integer and Octal To Float
+					((Objects.equals(currentState, "s4") || Objects.equals(currentState, "s1")|| Objects.equals(currentState, "s10")) && currentChar == '.') ||
+					// Pass if Integer of Float with negative Exp
+					(Objects.equals(currentState,"s13") || (Objects.equals(currentState,"s16")) && currentChar == '-')
+
+			){
 				//Ignores specific operators and delimiters for certain states
 				nextState = dfa.getNextState(currentState, currentChar);
 				string = string + currentChar;
 				currentState = nextState;
-			} else if (Objects.equals(currentState, "s7") ) {
-				//Accepts a complete string
-				String tokenType = dfa.getAcceptStateName(currentState);
-				tokens.add(new Token(string + currentChar, tokenType, lineNumber));
-				currentState = "s0";
-				string = "";
+				if (Objects.equals(currentState, "s7") ) {
+					//Accepts a complete string
+					String tokenType = dfa.getAcceptStateName(currentState);
+					tokens.add(new Token(string, tokenType, lineNumber));
+					currentState = "s0";
+					string = "";
+				}
 			} else if (!(isOperator(currentChar) || isDelimiter(currentChar) || isSpace(currentChar))) {
+				if (currentChar == '"' && !string.isEmpty()) {
+					processString(currentState, string, lineNumber);
+					currentState = "s0";
+					string = "";
+				}
 				nextState = dfa.getNextState(currentState, currentChar);
 				string = string + currentChar;
 				currentState = nextState;

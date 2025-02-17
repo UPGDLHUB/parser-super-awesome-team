@@ -1,1 +1,9 @@
-String s = "Hola mundo;
+int a = 42;
+int b = 052;
+int c = 0b101010;
+int d = 0x2A;
+double e = 3.14;
+double f = 2.5e3;
+double g = 1.2E-4;
+float h = 5.67f;
+float i = 8.9E2;
