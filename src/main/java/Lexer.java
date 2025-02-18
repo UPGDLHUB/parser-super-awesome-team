@@ -3,14 +3,29 @@ import java.util.*;
 
 
 /**
- * Lexer class to analyze the input file
- * This one is an initial version that uses a DFA to recognize binary numbers
+ * Lexer.java
+ * ---------------
+ * Implements a lexical analyzer (scanner) using a DFA-based approach.
+ * This lexer supports various token types including:
+ * - Binary numbers
+ * - Decimal numbers
+ * - Hexadecimal numbers
+ * - Octal numbers
+ * - Floating-point numbers
+ * - Identifiers
+ * - Keywords
+ * - Strings
+ * - Operators
+ * - Delimiters
+ *
+ * The lexer reads input from a file and produces a sequence of tokens
+ * that can be used by subsequent phases of compilation.
  *
  * @author javiergs
  * @author eduardomv
  * @author santiarr
  * @author yawham
- * @version 0.1
+ * @version 2.0
  */
 public class Lexer {
 
@@ -21,6 +36,12 @@ public class Lexer {
 			"int", "end", "if", "else", "while", "do", "break", "continue"
 	));
 
+	/**
+	 * Constructs a new Lexer for the specified input file.
+	 * Initializes the DFA with transitions for all supported token types.
+	 *
+	 * @param file The input file to be analyzed
+	 */
 	public Lexer(File file) {
 		this.file = file;
 		tokens = new Vector<>();
@@ -148,6 +169,12 @@ public class Lexer {
 
 	}
 
+	/**
+	 * Executes the lexical analysis on the input file.
+	 * Reads the file line by line and processes each line using the DFA.
+	 *
+	 * @throws IOException If an I/O error occurs while reading the input file
+	 */
 	public void run() throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line;
@@ -158,6 +185,17 @@ public class Lexer {
 		}
 	}
 
+	/**
+	 * Processes a single line of input text using the DFA.
+	 * Implements the main lexical analysis algorithm that:
+	 * 1. Processes characters one by one
+	 * 2. Tracks the current state in the DFA
+	 * 3. Builds up token strings
+	 * 4. Recognizes and creates tokens
+	 *
+	 * @param line The line of text to process
+	 * @param lineNumber The current line number in the input file
+	 */
 	private void algorithm(String line, int lineNumber) {
 		String currentState = "s0";
 		String nextState;
@@ -201,6 +239,14 @@ public class Lexer {
 		}
 	}
 
+	/**
+	 * Creates a token from the accumulated string if it represents a valid token.
+	 * Handles special cases for identifiers that might be keywords.
+	 *
+	 * @param currentState The current state of the DFA
+	 * @param string The accumulated string to be processed
+	 * @param lineNumber The current line number
+	 */
 	private void processString(String currentState, String string, int lineNumber) {
 		if (dfa.isAcceptState(currentState)) {
 			String tokenType = dfa.getAcceptStateName(currentState);
@@ -213,20 +259,42 @@ public class Lexer {
 		}
 	}
 
+	/**
+	 * Checks if a character is a whitespace character.
+	 *
+	 * @param c The character to check
+	 * @return true if the character is a space, tab, or newline
+	 */
 	private boolean isSpace(char c) {
 		return c == ' ' || c == '\t' || c == '\n';
 	}
 
+	/**
+	 * Checks if a character is a delimiter.
+	 *
+	 * @param c The character to check
+	 * @return true if the character is a delimiter
+	 */
 	private boolean isDelimiter(char c) {
 		return c == ',' || c == ';' || c == '.' || c == '(' || c == ')' ||
 				c == '{' || c == '}' || c == '[' || c == ']';
 	}
 
+	/**
+	 * Checks if a character is an operator.
+	 *
+	 * @param c The character to check
+	 * @return true if the character is an operator
+	 */
 	private boolean isOperator(char c) {
 		return c == '=' || c == '+' || c == '-' || c == '*' || c == '/' ||
 				c == '<' || c == '>' || c == '!' || c == '&' || c == '|';
 	}
 
+	/**
+	 * Prints all tokens produced by the lexical analysis.
+	 * Output is formatted in a tabular form showing token value, type, and line number.
+	 */
 	public void printTokens() {
 		System.out.println("\nToken List:");
 		System.out.printf("%10s\t|\t%10s\t|\t%s\n", "Value", "Type", "Line");
@@ -237,6 +305,11 @@ public class Lexer {
 		}
 	}
 
+	/**
+	 * Returns the vector of tokens produced by the lexical analysis.
+	 *
+	 * @return Vector containing all tokens
+	 */
 	public Vector<Token> getTokens() {
 		return tokens;
 	}
