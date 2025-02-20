@@ -255,10 +255,27 @@ public class Lexer {
 		String nextState;
 		String string = "";
 		int index = 0;
+		boolean inBlockComment = false;
 
 		while (index < line.length()) {
 
 			char currentChar = line.charAt(index);
+
+			if (inBlockComment) {
+				if (currentChar == '*' && index + 1 < line.length() && line.charAt(index + 1) == '/') {
+					inBlockComment = false;
+					index++;
+				}
+				index++;
+				continue;
+			}
+
+			if (currentChar == '/' && index + 1 < line.length() && line.charAt(index + 1) == '*') {
+				inBlockComment = true;
+				index++;
+				index++;
+				continue;
+			}
 			if (
 					//Pass if String or Char
 					(Objects.equals(currentState, "s6") || Objects.equals(currentState, "s20")|| Objects.equals(currentState, "s21")) ||
@@ -300,7 +317,10 @@ public class Lexer {
 						if (isDoubleOperator(s)) {
 							tokens.add(new Token(s, "OPERATOR", lineNumber));
 							index++;
-						}else{
+						} else if (s.equals("//")) {
+							index = line.length();
+							break;
+						} else{
 							tokens.add(new Token(String.valueOf(currentChar), "OPERATOR", lineNumber));
 						}
 					}else{
