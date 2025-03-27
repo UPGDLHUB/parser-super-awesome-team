@@ -1,6 +1,12 @@
-{
-  0;
-  1 + 2;
-  3 * (4 + hello);
+class Student {
+
+    void method1() {
+        1-(1+1);
+    }
+    void method2() {
+        1+1;
+
+    }
+
 }
 
