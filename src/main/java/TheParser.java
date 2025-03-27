@@ -45,6 +45,8 @@ public class TheParser {
 					(tokens.get(currentToken).getValue().equals("int")||
 					tokens.get(currentToken).getValue().equals("float")||
 					tokens.get(currentToken).getValue().equals("void")||
+					tokens.get(currentToken).getValue().equals("string")||
+					tokens.get(currentToken).getValue().equals("char")||
 					tokens.get(currentToken).getValue().equals("boolean"))){
 				RULE_METHODS();
 			}
@@ -65,6 +67,8 @@ public class TheParser {
 				(tokens.get(currentToken).getValue().equals("int")||
 				tokens.get(currentToken).getValue().equals("float")||
 				tokens.get(currentToken).getValue().equals("void")||
+				tokens.get(currentToken).getValue().equals("char")||
+				tokens.get(currentToken).getValue().equals("string")||
 				tokens.get(currentToken).getValue().equals("boolean"))) {
 			System.out.println("----- TYPE");
 			currentToken++;
@@ -110,6 +114,32 @@ public class TheParser {
 
 	public void RULE_PARAMS() {
 		System.out.println("------ RULE_PARAMS");
+		if (tokens.get(currentToken).getType().equals("KEYWORD")) {
+			if (tokens.get(currentToken).getType().equals("KEYWORD") &&
+					(tokens.get(currentToken).getValue().equals("int") ||
+							tokens.get(currentToken).getValue().equals("float") ||
+							tokens.get(currentToken).getValue().equals("void") ||
+							tokens.get(currentToken).getValue().equals("char") ||
+							tokens.get(currentToken).getValue().equals("string") ||
+							tokens.get(currentToken).getValue().equals("boolean"))) {
+				System.out.println("------- TYPE");
+				currentToken++;
+			} else {
+				error(7);
+			}
+			if (tokens.get(currentToken).getType().equals("IDENTIFIER")) {
+				System.out.println("------- IDENTIFIER");
+				currentToken++;
+			} else {
+				error(7);
+			}
+			if (tokens.get(currentToken).getValue().equals(",")){
+				System.out.println("------- ,");
+				currentToken++;
+				RULE_PARAMS();
+			}
+		}
+
 	}
 
 	public void RULE_BODY() {
