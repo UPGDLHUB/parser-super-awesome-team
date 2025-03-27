@@ -1,3 +1,41 @@
-.idea
-out
+# Directorios y archivos generados por IntelliJ IDEA
+.idea/
 *.iml
+*.iws
+
+# Archivos de compilación y salida
+/out/
+/target/
+*.class
+
+# Archivos de dependencias y empaquetado
+*.jar
+*.war
+*.ear
+
+# Configuración de Maven y Gradle
+.mvn/
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Archivos de logs y cachés
+*.log
+*.cache
+hs_err_pid*
+replay_pid*
+
+# Configuración específica del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de prueba y cobertura de código
+/test-results/
+/jacoco/
+
+# Variables de entorno y credenciales sensibles
+.env
+*.key
+*.pem
+*.p12
+*.crt
