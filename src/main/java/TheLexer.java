@@ -33,7 +33,7 @@ public class TheLexer {
     private Automata dfa;
     private Vector<TheToken> tokens;
     private static final Set<String> keywords = new HashSet<>(Arrays.asList(
-            "int", "end", "if", "else", "while", "do", "for", "break", "continue", "class", "float", "true", "false", "string", "char", "void", "boolean", "return"
+            "int", "end", "if", "else", "while", "do", "for", "break", "continue", "class", "float", "true", "false", "string", "char", "void", "boolean", "return", "switch", "case", "default"
     ));
 
     /**
@@ -379,7 +379,7 @@ public class TheLexer {
      */
     private boolean isDelimiter(char c) {
         return c == ',' || c == ';' || c == '.' || c == '(' || c == ')' ||
-                c == '{' || c == '}' || c == '[' || c == ']';
+                c == '{' || c == '}' || c == '[' || c == ']' || c == ':';
     }
 
     /**

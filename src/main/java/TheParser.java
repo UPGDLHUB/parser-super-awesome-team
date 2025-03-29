@@ -162,7 +162,7 @@ public class TheParser {
 
 	private void RULE_BODY() {
 		System.out.println("-- RULE_BODY");
-		while (!tokens.get(currentToken).getValue().equals("}")) {
+		while (!(tokens.get(currentToken).getValue().equals("}")||tokens.get(currentToken).getValue().equals("break"))) {
 			if (isType()) {
 				RULE_VARIABLE();
 				if (tokens.get(currentToken).getValue().equals(";")) {
@@ -499,11 +499,17 @@ public class TheParser {
 									currentToken++;
 									System.out.println("---- :");
 
-									while (!tokens.get(currentToken).getValue().equals("case") &&
-											!tokens.get(currentToken).getValue().equals("default") &&
-											!tokens.get(currentToken).getValue().equals("}")) {
+									while (!tokens.get(currentToken).getValue().equals("break")) {
 										RULE_BODY();
 									}
+									currentToken++;
+									System.out.println("---- break");
+									if (tokens.get(currentToken).getValue().equals(";")) {
+										currentToken++;
+										System.out.println("---- ;");
+									}
+
+
 								} else {
 									error(45);
 								}
@@ -715,6 +721,8 @@ public class TheParser {
 				tokens.get(currentToken).getType().equals("FLOAT") ||
 				tokens.get(currentToken).getType().equals("CHAR") ||
 				tokens.get(currentToken).getType().equals("STRING") ||
+				tokens.get(currentToken).getType().equals("HEXADECIMAL") ||
+				tokens.get(currentToken).getType().equals("BINARY") ||
 				(tokens.get(currentToken).getType().equals("KEYWORD") &&
 						(tokens.get(currentToken).getValue().equals("true") ||
 								tokens.get(currentToken).getValue().equals("false")))) {
